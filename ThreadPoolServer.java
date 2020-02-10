@@ -6,10 +6,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 
 public class ThreadPoolServer implements Server {
+	ExecutorService threadpool;
 	
+	public ThreadPoolServer() {
+		this.threadpool= Executors.newFixedThreadPool(20);
+	}
 	@Override
 	public Future<Block> getBlock(Task task) {
-		ExecutorService threadpool = Executors.newFixedThreadPool(5);
+		
 				FutureTask<Block> future = new FutureTask<Block>(task);
 				// Execute the future locally
 				threadpool.submit(future);
