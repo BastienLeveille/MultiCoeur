@@ -1,6 +1,7 @@
 package fr.univnantes.multicore.tp3;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -10,7 +11,7 @@ import java.util.concurrent.FutureTask;
 public class WebGrep {
 
 	private final static LinkedList<String> explored = new LinkedList<String>();
-
+	private static ExecutorService executor;
 	/*
 	 *  TODO : the search must be parallelized between the given number of threads
 	 */
@@ -45,10 +46,16 @@ public class WebGrep {
 		// TODO Just do it!
 		System.err.println("You must search parallelize the application between " + Tools.numberThreads() + " threads!\n");
 
-		ThreadPool tp = new ThreadPool(Tools.numberThreads());
+		//ThreadPool tp = new ThreadPool(Tools.numberThreads());
+		executor = Executors.newFixedThreadPool(Tools.numberThreads());
 		// Get the starting URL given in argument
 		for(String address : Tools.startingURL()) {
-			tp.enqueueAddress(tp, address);
+			Task tsk = new Task(address);
+			FutureTask<LinkedList<String>> future = new FutureTask<LinkedList<String>>(tsk);
+			explored.addAll((Collection<? extends String>) executor.submit(future));
+		}
+		for(String addr : explored) {
+			System.out.println(addr);
 		}
 
 	}
