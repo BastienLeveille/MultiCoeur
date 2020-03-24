@@ -9,8 +9,7 @@ public class Task implements Callable<ConcurrentSkipListSet<String>>{
 
 	   	private static ConcurrentSkipListSet<String> list; // ConcurrenteSkipListSet est thread safe
 	    private volatile String address;
-	    //private static volatile String explored;
-	    //private static volatile ParsedPage page;
+	    private static volatile ParsedPage page;
 	public Task (String addr) {
 		address = addr;
 		list = new ConcurrentSkipListSet<String>();
@@ -31,11 +30,8 @@ public class Task implements Callable<ConcurrentSkipListSet<String>>{
 
             if(tailleList < list.size()) {
                 // Parse the page to find matches and hypertext links
-                ParsedPage page = Tools.parsePage(address);
+                page = Tools.parsePage(address);
                 if(!page.matches().isEmpty()) {
-                    /* 
-                     * TODO: Tools.print(page) is not thread safe...
-                     */
                     Tools.print(page);
                     // Recursively explore other pages
                     for(String href : page.hrefs()) {
