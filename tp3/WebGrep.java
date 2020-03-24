@@ -4,13 +4,16 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 public class WebGrep {
 
-	private final static LinkedList<String> explored = new LinkedList<String>();
+	private final static ConcurrentSkipListSet<String> explored = new ConcurrentSkipListSet<String>();
+	private static ConcurrentSkipListSet<String> toPrint = new ConcurrentSkipListSet<String>();
 	private static ExecutorService executor;
 	/*
 	 *  TODO : the search must be parallelized between the given number of threads
@@ -38,7 +41,7 @@ public class WebGrep {
 	}
 
 
-	public static void main(String[] args) throws InterruptedException, IOException {
+	public static void main(String[] args) throws InterruptedException, IOException, ExecutionException {
 		// Initialize the program using the options given in argument
 		if(args.length == 0) Tools.initialize("-celt --threads=1000 Nantes https://fr.wikipedia.org/wiki/Nantes");
 		else Tools.initialize(args);
@@ -48,15 +51,20 @@ public class WebGrep {
 
 		//ThreadPool tp = new ThreadPool(Tools.numberThreads());
 		executor = Executors.newFixedThreadPool(Tools.numberThreads());
+
 		// Get the starting URL given in argument
 		for(String address : Tools.startingURL()) {
 			Task tsk = new Task(address);
-			FutureTask<LinkedList<String>> future = new FutureTask<LinkedList<String>>(tsk);
-			explored.addAll((Collection<? extends String>) executor.submit(future));
+			FutureTask<ConcurrentSkipListSet<String>> future = new FutureTask<ConcurrentSkipListSet<String>>(tsk);
+			executor.submit(future);
+			future.get();
+			/*for(String addr : toPrint) {
+				System.out.println(addr);
+			}*/
 		}
-		for(String addr : explored) {
-			System.out.println(addr);
-		}
+	/*	new Thread(() -> {
+			
+		}).start();*/
 
 	}
 }
